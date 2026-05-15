@@ -25,10 +25,9 @@ export default function App() {
       return Promise.resolve();
     }
 
-    const runningRequest = inflightRef.current.get(key);
-
-    if (runningRequest) {
-      return runningRequest;
+    const existingRequest = inflightRef.current.get(key);
+    if (existingRequest) {
+      return existingRequest;
     }
 
     const request = (async () => {
@@ -47,9 +46,9 @@ export default function App() {
         }));
 
         loadedKeysRef.current.add(key);
-      } catch (loadError) {
+      } catch (error) {
         setError("Failed to load force data");
-        throw loadError;
+        throw error;
       } finally {
         setLoadingKeys((current) => {
           const next = new Set(current);
@@ -75,7 +74,7 @@ export default function App() {
         return;
       }
 
-      const shouldOpen = !openIds.has(node.id);
+      const shouldLoad = !openIds.has(node.id);
 
       setOpenIds((current) => {
         const next = new Set(current);
@@ -89,16 +88,12 @@ export default function App() {
         return next;
       });
 
-      if (shouldOpen) {
+      if (shouldLoad) {
         void loadChildren(node.id).catch(() => undefined);
       }
     },
     [loadChildren, openIds],
   );
-
-  const handleSelect = useCallback((node: ForceNode) => {
-    setSelectedId(node.id);
-  }, []);
 
   const handleNavigate = useCallback(
     async (path: ForcePathItem[]) => {
@@ -108,9 +103,7 @@ export default function App() {
 
       await loadChildren(null);
 
-      const ancestors = path.slice(0, -1);
-
-      for (const item of ancestors) {
+      for (const item of path.slice(0, -1)) {
         setOpenIds((current) => new Set(current).add(item.id));
         await loadChildren(item.id);
       }
@@ -119,9 +112,6 @@ export default function App() {
     },
     [loadChildren],
   );
-
-  const rootNodes = childrenByParent[ROOT_KEY] ?? [];
-  const isRootLoading = loadingKeys.has(ROOT_KEY);
 
   return (
     <main className="app">
@@ -136,18 +126,19 @@ export default function App() {
 
         <section className="tree-panel">
           {error && <div className="error-box">{error}</div>}
-          {isRootLoading && (
+
+          {loadingKeys.has(ROOT_KEY) && (
             <div className="loading-root">Loading root forces...</div>
           )}
 
           <ForceTree
-            nodes={rootNodes}
+            nodes={childrenByParent[ROOT_KEY] ?? []}
             childrenByParent={childrenByParent}
             openIds={openIds}
             selectedId={selectedId}
             loadingKeys={loadingKeys}
             onToggle={handleToggle}
-            onSelect={handleSelect}
+            onSelect={(node) => setSelectedId(node.id)}
           />
         </section>
       </div>

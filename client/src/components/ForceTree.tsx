@@ -10,10 +10,6 @@ type ForceTreeProps = {
   onSelect: (node: ForceNode) => void;
 };
 
-function displayName(node: ForceNode): string {
-  return node.name?.trim() || `Force ${node.id}`;
-}
-
 export function ForceTree({
   nodes,
   childrenByParent,
@@ -27,14 +23,15 @@ export function ForceTree({
     <ul className="tree-list">
       {nodes.map((node) => {
         const isOpen = openIds.has(node.id);
-        const isSelected = selectedId === node.id;
         const children = childrenByParent[node.id] ?? [];
-        const isLoading = loadingKeys.has(node.id);
+        const label = node.name?.trim() || `Force ${node.id}`;
 
         return (
           <li key={node.id}>
             <div
-              className={`tree-row ${isSelected ? "selected" : ""}`}
+              className={
+                selectedId === node.id ? "tree-row selected" : "tree-row"
+              }
               onClick={() => onSelect(node)}
             >
               <button
@@ -49,14 +46,16 @@ export function ForceTree({
               </button>
 
               <div className="node-content">
-                <span className="node-name">{displayName(node)}</span>
+                <span className="node-name">{label}</span>
                 {node.forceType && (
                   <span className="node-type">{node.forceType}</span>
                 )}
               </div>
             </div>
 
-            {isLoading && <div className="loading-row">Loading...</div>}
+            {loadingKeys.has(node.id) && (
+              <div className="loading-row">Loading...</div>
+            )}
 
             {isOpen && children.length > 0 && (
               <ForceTree

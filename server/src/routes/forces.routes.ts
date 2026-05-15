@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { asyncHandler } from "../asyncHeandler";
+import { asyncHandler } from "../asyncHandler";
 import {
   getChildren,
   getRootForces,
@@ -20,14 +20,6 @@ function parseLimit(value: unknown): number {
 
 function isNumericId(value: string): boolean {
   return /^\d+$/.test(value);
-}
-
-function getSingleParam(value: string | string[] | undefined): string | null {
-  if (!value) {
-    return null;
-  }
-
-  return Array.isArray(value) ? value[0] : value;
 }
 
 forcesRouter.get(
@@ -57,10 +49,10 @@ forcesRouter.get(
 forcesRouter.get(
   "/:id/children",
   asyncHandler(async (req, res) => {
-    const id = getSingleParam(req.params.id);
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
     if (!id || !isNumericId(id)) {
-      res.status(400).json({ message: "Invalid force id" });
+      res.status(400).json({ message: "Invalid id" });
       return;
     }
 

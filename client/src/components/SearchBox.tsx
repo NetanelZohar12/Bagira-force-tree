@@ -15,37 +15,35 @@ function pathLabel(path: ForcePathItem[]): string {
 export function SearchBox({ onNavigate }: SearchBoxProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<ForceSearchResult[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function handleQueryChange(value: string): void {
+  function onSearchChange(value: string) {
     setQuery(value);
 
     if (value.trim().length < 2) {
       setResults([]);
-      setIsLoading(false);
+      setLoading(false);
       setError(null);
     }
   }
 
   useEffect(() => {
-    const trimmedQuery = query.trim();
+    const searchText = query.trim();
 
-    if (trimmedQuery.length < 2) {
+    if (searchText.length < 2) {
       return;
     }
 
     const controller = new AbortController();
 
     const timeoutId = window.setTimeout(() => {
-      setIsLoading(true);
+      setLoading(true);
       setError(null);
 
       forcesApi
-        .search(trimmedQuery, controller.signal)
-        .then((data) => {
-          setResults(data);
-        })
+        .search(searchText, controller.signal)
+        .then(setResults)
         .catch(() => {
           if (!controller.signal.aborted) {
             setError("Search failed");
@@ -53,7 +51,7 @@ export function SearchBox({ onNavigate }: SearchBoxProps) {
         })
         .finally(() => {
           if (!controller.signal.aborted) {
-            setIsLoading(false);
+            setLoading(false);
           }
         });
     }, 300);
@@ -70,10 +68,10 @@ export function SearchBox({ onNavigate }: SearchBoxProps) {
         className="search-input"
         value={query}
         placeholder="Search by name or force type..."
-        onChange={(event) => handleQueryChange(event.target.value)}
+        onChange={(event) => onSearchChange(event.target.value)}
       />
 
-      {isLoading && <div className="search-status">Searching...</div>}
+      {loading && <div className="search-status">Searching...</div>}
       {error && <div className="search-error">{error}</div>}
 
       <div className="search-results">
