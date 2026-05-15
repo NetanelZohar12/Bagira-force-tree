@@ -1,0 +1,20 @@
+# dependencies
+node_modules/
+
+# environment files
+.env
+
+# build outputs
+dist/
+build/
+
+# OS / editor
+.vscode/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# database / dumps
+*.backup
+*.dump
+*.sql.gz
