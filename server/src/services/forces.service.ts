@@ -13,7 +13,7 @@ type SearchRow = {
   id: string;
   name: string | null;
   force_type: string | null;
-  path: ForcePathItem[] | string;
+  path: ForcePathItem[];
 };
 
 function mapNode(row: ForceNodeRow): ForceNode {
@@ -105,14 +105,13 @@ export async function searchForces(
     ancestors AS (
       SELECT
         m.id AS target_id,
-        f.id,
-        f.parent_id,
-        f.name,
-        f.force_type,
+        m.id,
+        m.parent_id,
+        m.name,
+        m.force_type,
         0 AS depth,
-        ARRAY[f.id::text] AS visited
+        ARRAY[m.id::text] AS visited
       FROM matched m
-      JOIN public.forces f ON f.id = m.id
 
       UNION ALL
 
@@ -153,6 +152,6 @@ export async function searchForces(
     id: row.id,
     name: row.name,
     forceType: row.force_type,
-    path: typeof row.path === "string" ? JSON.parse(row.path) : row.path,
+    path: row.path,
   }));
 }

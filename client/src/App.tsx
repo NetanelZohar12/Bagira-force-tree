@@ -15,8 +15,8 @@ export default function App() {
   const [loadingKeys, setLoadingKeys] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
 
-  const loadedKeysRef = useRef<Set<string>>(new Set());
   const inflightRef = useRef<Map<string, Promise<void>>>(new Map());
+  const loadedKeysRef = useRef<Set<string>>(new Set());
 
   const loadChildren = useCallback((parentId: string | null): Promise<void> => {
     const key = parentId ?? ROOT_KEY;
